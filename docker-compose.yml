@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg14
+    container_name: amc_postgres
+    environment:
+      POSTGRES_DB: amc_simulation
+      POSTGRES_USER: amc_user
+      POSTGRES_PASSWORD: amc_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - amc_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: amc_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - amc_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: amc_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@amc.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - amc_network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: amc_app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: amc_simulation
+      DB_USER: amc_user
+      DB_PASSWORD: amc_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CUSTOMER_CREATION_INTERVAL: 5000
+      FOLIO_CREATION_INTERVAL: 15000
+      TRANSACTION_SIMULATION_INTERVAL: 10000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - amc_network
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
+
+networks:
+  amc_network:
+    driver: bridge
