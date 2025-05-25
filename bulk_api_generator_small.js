@@ -4,9 +4,9 @@ class BulkAPIGeneratorSmall {
   constructor() {
     this.baseURL = 'http://localhost:3000/api';
     this.targets = {
-      customers: 100,
-      foliosPerCustomer: 1,
-      transactionsPerFolio: 5
+      customers: 1000,
+      foliosPerCustomer: 2,
+      transactionsPerFolio: 150
     };
     this.progress = {
       customers: 0,

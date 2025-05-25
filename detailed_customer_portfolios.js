@@ -26,7 +26,7 @@ async function showDetailedCustomerPortfolios() {
       FROM amc.customers c
       INNER JOIN portfolio_summary ps ON c.id = ps.customer_id
       ORDER BY c.id
-      LIMIT 10
+      LIMIT 2000
     `);
     
     console.log(`👥 Found ${customersWithPortfolios.rows.length} customers with portfolios\n`);
